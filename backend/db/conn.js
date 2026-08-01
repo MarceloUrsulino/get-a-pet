@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 
 async function main() {
-    await mongoose.connect(process.env.DB_CONNECTION_STRING)
+    await mongoose.connect(process.env.DB_CONNECTION_STRING, { dbName: 'getapet' })
     console.log('Conectou ao mongoose.')
 }
 
