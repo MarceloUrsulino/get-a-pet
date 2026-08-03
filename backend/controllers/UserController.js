@@ -136,6 +136,8 @@ module.exports = class UserController{
         // Responde com os dados do usuário logado (ou null, se não estava logado)
         res.status(200).send(currentUser)
     }
+
+    //Resgatando usuário por id
     static async getUserById(req, res) {
         const id = req.params.id
 
@@ -147,5 +149,11 @@ module.exports = class UserController{
             return
         }
         res.status(200).json({ user })
+    }
+
+    static async editUser(req, res){
+        res.status(422).json({message: 'Deu certo update.'})
+            return
+        
     }
 }
