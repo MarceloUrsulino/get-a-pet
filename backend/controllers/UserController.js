@@ -1,7 +1,10 @@
-
 const User = require('../models/User')
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
+
+//helpers
 const createUserToken = require('../helpers/create-user-token')
+const getToken = require('../helpers/get-token')
 
 
 module.exports = class UserController{
@@ -93,16 +96,44 @@ module.exports = class UserController{
 
     }
     //verifyToken
+
+    // Rota que verifica se existe um usuário autenticado
+    // baseado no token enviado no header Authorization.
+    // Usada, por exemplo, quando o frontend recarrega a página
+    // e precisa confirmar "esse token ainda é válido? quem está logado?" 
     static async checkUser(req,res){
-
+        // Variável que vai guardar o usuário atual (ou null, se não tiver token)
         let currentUser
-        console.log(req.headers.authorization)
-
+        
+        
         if(req.headers.authorization){
+            // Confere se o header Authorization foi enviado na requisição
+            const token = getToken(req)
+
+            // jwt.verify faz duas coisas:
+            // 1) Confere se o token é válido/não foi adulterado, comparando
+            //    com a mesma secret usada para criar ele (process.env.JWT_SECRET).
+            //    Se for inválido, lança um erro automaticamente.
+            // 2) Se for válido, decodifica o token e devolve o payload
+            //    que foi gravado nele lá no login/registro (name, id, etc.)
+            const decoded = jwt.verify(token, process.env.JWT_SECRET)
+
+            // Usa o id que veio decodificado do token para buscar
+            // o usuário atualizado direto no banco de dados.
+            // Isso garante que os dados estejam sempre corretos/atuais,
+            // mesmo que o token tenha sido gerado há um tempo atrás.
+            currentUser = await User.findById(decoded.id)
+
+           // Remove o campo de senha (hash) do objeto antes de responder.
+           // Por segurança, a senha (mesmo hasheada) nunca deve ser
+           // devolvida nas respostas da API.
+            currentUser.password = undefined
 
         }else{
+            // Se não veio nenhum token no header, não há usuário autenticado
             currentUser = null
         }
+        // Responde com os dados do usuário logado (ou null, se não estava logado)
         res.status(200).send(currentUser)
     }
     
