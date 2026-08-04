@@ -5,8 +5,7 @@ const getToken = require('./get-token')
 
 //validação de token - middleware
 const checkToken = (req,res, next) =>{
-    console.log('Header recebido:', req.headers.authorization)
-
+    
     if(!req.headers.authorization){
         return res.status(401).json({ message: 'Acesso negado.'})
     }
